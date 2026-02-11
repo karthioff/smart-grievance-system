@@ -1,0 +1,159 @@
+═══════════════════════════════════════════════════════════════
+    SMART PUBLIC GRIEVANCE SYSTEM - QUICK START GUIDE
+═══════════════════════════════════════════════════════════════
+
+📍 PROJECT LOCATION: C:\Users\Administrator\Desktop\sgs 2
+
+═══════════════════════════════════════════════════════════════
+🚀 HOW TO START (2 STEPS)
+═══════════════════════════════════════════════════════════════
+
+STEP 1: START BACKEND
+----------------------
+1. Open Command Prompt
+2. Run these commands:
+   cd "C:\Users\Administrator\Desktop\sgs 2\backend-node"
+   npm start
+
+3. Wait for: "✓ Grievance System Backend Server Running"
+4. KEEP THIS WINDOW OPEN!
+
+STEP 2: START FRONTEND
+-----------------------
+1. Open ANOTHER Command Prompt (new window)
+2. Run these commands:
+   cd "C:\Users\Administrator\Desktop\sgs 2\frontend"
+   npm start
+
+3. Browser will open automatically at: http://localhost:3000
+4. KEEP THIS WINDOW OPEN TOO!
+
+═══════════════════════════════════════════════════════════════
+🔑 LOGIN CREDENTIALS
+═══════════════════════════════════════════════════════════════
+
+ADMIN LOGIN:
+-----------
+URL: http://localhost:3000/admin/login
+Email: admin@grievance.com
+Password: admin123
+
+USER LOGIN:
+----------
+URL: http://localhost:3000/login
+(Register first, then login with your credentials)
+
+═══════════════════════════════════════════════════════════════
+🎯 DEMO FLOW FOR REVIEW
+═══════════════════════════════════════════════════════════════
+
+USER DEMO:
+---------
+1. Register new user
+2. Login
+3. View dashboard
+4. Submit complaint (use word "urgent" for High priority)
+5. View all complaints
+6. View complaint details
+
+ADMIN DEMO:
+----------
+1. Logout from user
+2. Go to: http://localhost:3000/admin/login
+3. Login with admin credentials
+4. View statistics dashboard
+5. See ALL complaints from ALL users
+6. Change complaint status using dropdown
+
+═══════════════════════════════════════════════════════════════
+✨ KEY FEATURES TO SHOW
+═══════════════════════════════════════════════════════════════
+
+✅ User registration & login
+✅ Submit complaints
+✅ Automatic priority assignment (High/Medium/Low)
+✅ View complaints with status
+✅ Admin dashboard with statistics
+✅ Admin can see all users' complaints
+✅ Admin can update complaint status
+✅ Beautiful animated UI
+✅ MySQL database integration
+
+═══════════════════════════════════════════════════════════════
+🎨 PRIORITY RULES (Show this!)
+═══════════════════════════════════════════════════════════════
+
+HIGH PRIORITY:
+- Keywords: urgent, emergency, critical, danger, life, death
+- Categories: health, safety, water, electricity
+
+MEDIUM PRIORITY:
+- Keywords: problem, issue, broken, damaged, not working
+
+LOW PRIORITY:
+- Everything else
+
+═══════════════════════════════════════════════════════════════
+🛠️ TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+Problem: Port already in use
+Solution: Close other programs or restart computer
+
+Problem: Backend won't start
+Solution: Make sure MySQL is running
+
+Problem: Can't see admin option
+Solution: Go directly to: http://localhost:3000/admin/login
+
+═══════════════════════════════════════════════════════════════
+📊 COMPLETION STATUS
+═══════════════════════════════════════════════════════════════
+
+✅ 50% COMPLETE - READY FOR FIRST REVIEW
+
+Completed:
+- User registration & authentication
+- Submit & view complaints
+- Automatic priority assignment
+- Admin dashboard
+- Admin can view all complaints
+- Admin can update status
+- Beautiful UI with animations
+- MySQL database
+
+Remaining (Next 50%):
+- Officer dashboard
+- SLA tracking
+- Automatic escalation
+- Email/SMS notifications
+- Advanced analytics
+
+═══════════════════════════════════════════════════════════════
+📞 IMPORTANT URLS
+═══════════════════════════════════════════════════════════════
+
+Backend: http://localhost:5000
+Frontend: http://localhost:3000
+User Login: http://localhost:3000/login
+Admin Login: http://localhost:3000/admin/login
+
+═══════════════════════════════════════════════════════════════
+✅ PRE-REVIEW CHECKLIST
+═══════════════════════════════════════════════════════════════
+
+□ MySQL service running
+□ Backend started (npm start in backend-node)
+□ Frontend started (npm start in frontend)
+□ Can access http://localhost:3000
+□ Tested user registration
+□ Tested user login
+□ Tested admin login (admin@grievance.com / admin123)
+□ Submitted test complaints
+□ Verified admin can see all complaints
+
+═══════════════════════════════════════════════════════════════
+
+🎉 GOOD LUCK WITH YOUR REVIEW! 🎉
+
+═══════════════════════════════════════════════════════════════

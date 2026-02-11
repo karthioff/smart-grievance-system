@@ -1,0 +1,206 @@
+═══════════════════════════════════════════════════════════════
+    🔒 SECURITY FLOW DIAGRAM
+═══════════════════════════════════════════════════════════════
+
+1️⃣ USER REGISTRATION FLOW (with bcryptjs):
+═══════════════════════════════════════════════════════════════
+
+User enters password: "password123"
+           ↓
+Frontend validates input
+           ↓
+Sends to Backend API
+           ↓
+bcryptjs.hash(password, 10)  ← 🔒 SECURITY TOOL #1
+           ↓
+Hashed: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
+           ↓
+Stored in MySQL Database  ← 🔒 SECURITY TOOL #5 (Parameterized Query)
+           ↓
+✅ Password is SAFE (cannot be reversed)
+
+
+2️⃣ USER LOGIN FLOW (with JWT):
+═══════════════════════════════════════════════════════════════
+
+User enters: email + password
+           ↓
+Sends to Backend API
+           ↓
+Find user in database  ← 🔒 Parameterized Query
+           ↓
+bcryptjs.compare(password, hashedPassword)  ← 🔒 SECURITY TOOL #1
+           ↓
+Password matches? ✅
+           ↓
+jwt.sign({ id: user.id }, SECRET_KEY)  ← 🔒 SECURITY TOOL #2
+           ↓
+Generate Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+           ↓
+Send token to Frontend
+           ↓
+Store in localStorage
+           ↓
+✅ User is AUTHENTICATED
+
+
+3️⃣ ACCESSING PROTECTED DATA (with JWT Middleware):
+═══════════════════════════════════════════════════════════════
+
+User clicks "View Complaints"
+           ↓
+Frontend sends request with token
+Headers: { Authorization: "Bearer eyJhbGciOiJIUzI1..." }
+           ↓
+Backend receives request
+           ↓
+authenticateToken() middleware  ← 🔒 SECURITY FEATURE
+           ↓
+jwt.verify(token, SECRET_KEY)  ← 🔒 SECURITY TOOL #2
+           ↓
+Token valid? ✅
+           ↓
+Extract user ID from token
+           ↓
+Query database for user's complaints  ← 🔒 Parameterized Query
+           ↓
+Return ONLY user's data (not others')  ← 🔒 Access Control
+           ↓
+✅ Data is SECURE
+
+
+4️⃣ SQL INJECTION PREVENTION (with mysql2):
+═══════════════════════════════════════════════════════════════
+
+❌ INSECURE WAY (NOT USED):
+query = "SELECT * FROM users WHERE email = '" + email + "'"
+Hacker input: admin@test.com' OR '1'='1
+Result: Returns ALL users! 💀
+
+✅ SECURE WAY (USED):
+query = "SELECT * FROM users WHERE email = ?"
+params = [email]
+pool.query(query, params)  ← 🔒 SECURITY TOOL #5
+Hacker input: admin@test.com' OR '1'='1
+Result: Treats entire string as email, returns nothing ✅
+
+
+5️⃣ CORS PROTECTION (with cors):
+═══════════════════════════════════════════════════════════════
+
+Malicious Website (evil.com) tries to access API
+           ↓
+Browser sends request to http://localhost:5000
+           ↓
+CORS middleware checks origin  ← 🔒 SECURITY TOOL #3
+           ↓
+Origin not allowed? ❌
+           ↓
+Request BLOCKED
+           ↓
+✅ API is PROTECTED
+
+
+6️⃣ ENVIRONMENT VARIABLES (with dotenv):
+═══════════════════════════════════════════════════════════════
+
+❌ INSECURE (NOT USED):
+const password = "root123";  // Visible in code!
+const secret = "my-secret-key";  // Uploaded to GitHub!
+
+✅ SECURE (USED):
+.env file:  ← 🔒 SECURITY TOOL #4
+DB_PASSWORD=root123
+JWT_SECRET_KEY=my-secret-key
+
+Code:
+const password = process.env.DB_PASSWORD;
+const secret = process.env.JWT_SECRET_KEY;
+
+.gitignore:
+.env  ← Not uploaded to GitHub ✅
+
+
+7️⃣ ROLE-BASED ACCESS CONTROL:
+═══════════════════════════════════════════════════════════════
+
+CITIZEN LOGIN:
+User logs in → Token: { id: 5, role: "citizen" }
+           ↓
+Accesses /api/complaints
+           ↓
+Query: SELECT * FROM complaints WHERE user_id = 5
+           ↓
+Returns: ONLY their complaints ✅
+
+ADMIN LOGIN:
+Admin logs in → Token: { id: 1, role: "admin" }
+           ↓
+Accesses /api/admin/complaints
+           ↓
+Query: SELECT * FROM complaints (all)
+           ↓
+Returns: ALL complaints from ALL users ✅
+
+
+8️⃣ COMPLETE SECURITY FLOW:
+═══════════════════════════════════════════════════════════════
+
+User Registration
+    ↓ [bcryptjs]
+Password Hashed
+    ↓ [mysql2 parameterized]
+Stored Securely
+    ↓
+User Login
+    ↓ [bcryptjs.compare]
+Password Verified
+    ↓ [jsonwebtoken]
+JWT Token Generated
+    ↓ [localStorage]
+Token Stored
+    ↓
+User Makes Request
+    ↓ [Authorization Header]
+Token Sent
+    ↓ [JWT Middleware]
+Token Verified
+    ↓ [Role Check]
+Access Granted
+    ↓ [Parameterized Query]
+Data Retrieved
+    ↓ [CORS]
+Response Sent
+    ↓
+✅ SECURE END-TO-END
+
+
+═══════════════════════════════════════════════════════════════
+🔐 SECURITY LAYERS:
+═══════════════════════════════════════════════════════════════
+
+Layer 1: CORS Protection (cors)
+         ↓ Blocks unauthorized websites
+
+Layer 2: JWT Authentication (jsonwebtoken)
+         ↓ Verifies user identity
+
+Layer 3: Role-Based Access (Database + JWT)
+         ↓ Controls what users can see
+
+Layer 4: SQL Injection Prevention (mysql2)
+         ↓ Protects database
+
+Layer 5: Password Hashing (bcryptjs)
+         ↓ Protects passwords
+
+Layer 6: Environment Variables (dotenv)
+         ↓ Hides secrets
+
+═══════════════════════════════════════════════════════════════
+✅ RESULT: MULTI-LAYERED SECURITY
+═══════════════════════════════════════════════════════════════
+
+Even if one layer is bypassed, other layers protect the system!
+
+═══════════════════════════════════════════════════════════════
