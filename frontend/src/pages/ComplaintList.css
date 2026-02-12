@@ -1,7 +1,7 @@
 .complaint-list-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40px 20px;
+  background: #f5f5f5;
+  padding: 30px 20px;
 }
 
 .complaint-list-header {
@@ -13,9 +13,9 @@
   max-width: 1200px;
   margin: 0 auto;
   background: white;
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 30px;
+  border: 1px solid #e5e5e5;
 }
 
 .card-header {
@@ -63,20 +63,18 @@
 }
 
 .submit-new-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-color);
   color: white;
   border: none;
-  padding: 14px 28px;
-  border-radius: 10px;
+  padding: 12px 24px;
+  border-radius: 4px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 .submit-new-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+  opacity: 0.9;
 }
 
 .complaints-grid {
@@ -86,19 +84,17 @@
 }
 
 .complaint-card {
-  background: var(--bg-gray);
-  border-radius: 16px;
-  padding: 24px;
+  background: white;
+  border-radius: 6px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  gap: 14px;
+  border: 1px solid #e5e5e5;
 }
 
 .complaint-card:hover {
   border-color: var(--primary-color);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
 }
 
 .complaint-header {
@@ -200,20 +196,18 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 .view-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+  opacity: 0.9;
 }
 
 @media (max-width: 768px) {

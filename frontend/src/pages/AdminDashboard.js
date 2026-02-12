@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FileText, Users, LogOut, Shield, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { FileText, Users, LogOut, Shield, TrendingUp, AlertCircle, CheckCircle, Clock, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import './AdminDashboard.css';
@@ -21,6 +21,8 @@ const AdminDashboard = () => {
   });
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -57,6 +59,16 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error updating status:', error);
     }
+  };
+
+  const viewComplaintHistory = (complaint) => {
+    setSelectedComplaint(complaint);
+    setShowHistory(true);
+  };
+
+  const closeHistory = () => {
+    setShowHistory(false);
+    setSelectedComplaint(null);
   };
 
   const handleLogout = () => {
@@ -198,6 +210,7 @@ const AdminDashboard = () => {
                     <th>Status</th>
                     <th>Date</th>
                     <th>Action</th>
+                    <th>History</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -236,6 +249,15 @@ const AdminDashboard = () => {
                           <option value="Escalated">Escalated</option>
                         </select>
                       </td>
+                      <td>
+                        <button
+                          onClick={() => viewComplaintHistory(complaint)}
+                          className="history-btn"
+                          title="View History"
+                        >
+                          <History size={18} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -244,6 +266,118 @@ const AdminDashboard = () => {
           )}
         </motion.div>
       </div>
+
+      {showHistory && selectedComplaint && (
+        <div className="modal-overlay" onClick={closeHistory}>
+          <motion.div
+            className="history-modal"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="modal-header">
+              <h2>
+                <History size={24} />
+                Complaint History
+              </h2>
+              <button onClick={closeHistory} className="close-btn">×</button>
+            </div>
+
+            <div className="modal-content">
+              <div className="history-section">
+                <h3>Complaint Details</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <strong>ID:</strong>
+                    <span>{selectedComplaint.id}</span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Title:</strong>
+                    <span>{selectedComplaint.title}</span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Category:</strong>
+                    <span>{selectedComplaint.category}</span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Priority:</strong>
+                    <span className={`badge ${getPriorityClass(selectedComplaint.priority)}`}>
+                      {selectedComplaint.priority}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Current Status:</strong>
+                    <span className={`badge ${getStatusClass(selectedComplaint.status)}`}>
+                      {selectedComplaint.status}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Location:</strong>
+                    <span>{selectedComplaint.location || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="history-section">
+                <h3>User Information</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <strong>Name:</strong>
+                    <span>{selectedComplaint.user_name}</span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Email:</strong>
+                    <span>{selectedComplaint.user_email}</span>
+                  </div>
+                  <div className="detail-item">
+                    <strong>Phone:</strong>
+                    <span>{selectedComplaint.user_phone}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="history-section">
+                <h3>Description</h3>
+                <p className="description-text">{selectedComplaint.description}</p>
+              </div>
+
+              <div className="history-section">
+                <h3>Timeline</h3>
+                <div className="timeline">
+                  <div className="timeline-item">
+                    <div className="timeline-dot created"></div>
+                    <div className="timeline-content">
+                      <strong>Complaint Created</strong>
+                      <span>{new Date(selectedComplaint.created_at).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  
+                  {selectedComplaint.updated_at && (
+                    <div className="timeline-item">
+                      <div className="timeline-dot updated"></div>
+                      <div className="timeline-content">
+                        <strong>Last Updated</strong>
+                        <span>{new Date(selectedComplaint.updated_at).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {selectedComplaint.resolved_at && (
+                    <div className="timeline-item">
+                      <div className="timeline-dot resolved"></div>
+                      <div className="timeline-content">
+                        <strong>Resolved</strong>
+                        <span>{new Date(selectedComplaint.resolved_at).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
