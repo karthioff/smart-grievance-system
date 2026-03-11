@@ -3,6 +3,8 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
+const nodemailer = require('nodemailer');
+const twilio = require('twilio');
 require('dotenv').config();
 
 const app = express();
@@ -11,6 +13,29 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Email transporter configuration
+const emailTransporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: process.env.EMAIL_PORT || 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
+  }
+});
+
+// Twilio client configuration
+let twilioClient = null;
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && 
+      process.env.TWILIO_ACCOUNT_SID !== 'your-twilio-account-sid') {
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    console.log('✓ Twilio SMS configured');
+  }
+} catch (error) {
+  console.log('⚠ Twilio not configured (SMS disabled)');
+}
 
 // Database configuration
 const dbConfig = {
@@ -201,6 +226,179 @@ async function createNotification(userId, complaintId, message, type = 'info') {
   }
 }
 
+// Send Email Notification
+async function sendEmailNotification(subject, message, complaintDetails) {
+  try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      console.log('⚠ Email credentials not configured');
+      return;
+    }
+
+    const mailOptions = {
+      from: `"Grievance System" <${process.env.EMAIL_USER}>`,
+      to: process.env.ADMIN_EMAIL,
+      subject: subject,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">🔔 New Complaint Alert</h1>
+          </div>
+          <div style="padding: 30px; background: #f9fafb;">
+            <h2 style="color: #1f2937; margin-top: 0;">${message}</h2>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="color: #667eea; margin-top: 0;">Complaint Details:</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>Complaint ID:</strong></td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">#${complaintDetails.id}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>Title:</strong></td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${complaintDetails.title}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>Category:</strong></td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${complaintDetails.category}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>Priority:</strong></td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
+                    <span style="background: ${complaintDetails.priority === 'High' ? '#fee2e2' : complaintDetails.priority === 'Medium' ? '#fef3c7' : '#d1fae5'}; 
+                                 color: ${complaintDetails.priority === 'High' ? '#dc2626' : complaintDetails.priority === 'Medium' ? '#d97706' : '#059669'}; 
+                                 padding: 4px 12px; border-radius: 12px; font-weight: 600;">
+                      ${complaintDetails.priority}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>Location:</strong></td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${complaintDetails.location || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>User Name:</strong></td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${complaintDetails.userName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>User Email:</strong></td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${complaintDetails.userEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>User Phone:</strong></td>
+                  <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${complaintDetails.userPhone}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px;"><strong>Description:</strong></td>
+                  <td style="padding: 10px;">${complaintDetails.description}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+              <a href="http://localhost:3000/admin" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        color: white; 
+                        padding: 12px 30px; 
+                        text-decoration: none; 
+                        border-radius: 6px; 
+                        font-weight: 600;
+                        display: inline-block;">
+                View in Admin Dashboard
+              </a>
+            </div>
+          </div>
+          <div style="background: #1f2937; padding: 20px; text-align: center; color: #9ca3af; font-size: 12px;">
+            <p style="margin: 0;">Smart Public Grievance Escalation System</p>
+            <p style="margin: 5px 0 0 0;">This is an automated notification. Please do not reply to this email.</p>
+          </div>
+        </div>
+      `
+    };
+
+    await emailTransporter.sendMail(mailOptions);
+    console.log('✓ Email notification sent to admin');
+  } catch (error) {
+    console.error('Email notification error:', error.message);
+  }
+}
+
+// Send SMS Notification (Using Fast2SMS - Free for India)
+async function sendSMSNotification(message) {
+  try {
+    // Method 1: Fast2SMS (if configured)
+    if (process.env.FAST2SMS_API_KEY && process.env.FAST2SMS_API_KEY !== 'your-fast2sms-api-key') {
+      const axios = require('axios');
+      const response = await axios.post('https://www.fast2sms.com/dev/bulkV2', {
+        route: 'v3',
+        sender_id: 'TXTIND',
+        message: message,
+        language: 'english',
+        flash: 0,
+        numbers: process.env.ADMIN_PHONE
+      }, {
+        headers: {
+          'authorization': process.env.FAST2SMS_API_KEY,
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('✓ SMS notification sent to admin via Fast2SMS');
+      return;
+    }
+
+    // Method 2: Twilio (if configured)
+    if (twilioClient) {
+      await twilioClient.messages.create({
+        body: message,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: `+91${process.env.ADMIN_PHONE}`
+      });
+      console.log('✓ SMS notification sent to admin via Twilio');
+      return;
+    }
+
+    // No SMS service configured
+    console.log('⚠ SMS not configured - Install Fast2SMS (free) or Twilio');
+    console.log('📱 SMS would have been sent to:', process.env.ADMIN_PHONE);
+    console.log('📝 Message:', message.substring(0, 100) + '...');
+    
+  } catch (error) {
+    console.error('SMS notification error:', error.message);
+    console.log('📱 Failed to send SMS to:', process.env.ADMIN_PHONE);
+  }
+}
+
+// Notify Admin about new complaint
+async function notifyAdminAboutComplaint(complaintDetails) {
+  try {
+    // Get admin user
+    const [admins] = await pool.query('SELECT id FROM users WHERE role = "admin" LIMIT 1');
+    
+    if (admins.length > 0) {
+      // Create in-app notification for admin
+      await createNotification(
+        admins[0].id,
+        complaintDetails.id,
+        `New ${complaintDetails.priority} priority complaint: "${complaintDetails.title}" from ${complaintDetails.userName}`,
+        'warning'
+      );
+    }
+
+    // Send Email
+    await sendEmailNotification(
+      `🚨 New ${complaintDetails.priority} Priority Complaint #${complaintDetails.id}`,
+      `A new complaint has been submitted and requires your attention.`,
+      complaintDetails
+    );
+
+    // Send SMS
+    const smsMessage = `🚨 New ${complaintDetails.priority} Priority Complaint #${complaintDetails.id}\nTitle: ${complaintDetails.title}\nCategory: ${complaintDetails.category}\nFrom: ${complaintDetails.userName}\nView: http://localhost:3000/admin`;
+    await sendSMSNotification(smsMessage);
+
+  } catch (error) {
+    console.error('Admin notification error:', error);
+  }
+}
+
 // Check and escalate overdue complaints
 async function checkAndEscalateComplaints() {
   try {
@@ -359,6 +557,10 @@ app.post('/api/complaints', authenticateToken, async (req, res) => {
       [req.userId, title, description, category, location, priority, 'Pending', assignedOfficer, slaDeadline]
     );
 
+    // Get user details for admin notification
+    const [users] = await pool.query('SELECT name, email, phone FROM users WHERE id = ?', [req.userId]);
+    const user = users[0];
+
     // Create notification for user
     await createNotification(
       req.userId,
@@ -376,6 +578,19 @@ app.post('/api/complaints', authenticateToken, async (req, res) => {
         'info'
       );
     }
+
+    // Notify Admin via Email, SMS, and In-App
+    await notifyAdminAboutComplaint({
+      id: result.insertId,
+      title,
+      description,
+      category,
+      location,
+      priority,
+      userName: user.name,
+      userEmail: user.email,
+      userPhone: user.phone
+    });
 
     res.status(201).json({
       message: 'Complaint submitted successfully',

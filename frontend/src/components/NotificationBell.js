@@ -1,17 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { Bell } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './NotificationBell.css';
 
 const NotificationBell = ({ token }) => {
-  const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
+    if (token) {
+      fetchUnreadCount();
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const fetchUnreadCount = async () => {
@@ -26,6 +40,7 @@ const NotificationBell = ({ token }) => {
   };
 
   const fetchNotifications = async () => {
+    setLoading(true);
     try {
       const response = await axios.get('http://localhost:5000/api/notifications', {
         headers: { Authorization: `Bearer ${token}` }
@@ -33,33 +48,39 @@ const NotificationBell = ({ token }) => {
       setNotifications(response.data.notifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleBellClick = () => {
-    setShowDropdown(!showDropdown);
-    if (!showDropdown) {
+  const toggleDropdown = () => {
+    if (!isOpen) {
       fetchNotifications();
     }
+    setIsOpen(!isOpen);
   };
 
   const markAsRead = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/notifications/${id}/read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.put(
+        `http://localhost:5000/api/notifications/${id}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       fetchUnreadCount();
       fetchNotifications();
     } catch (error) {
-      console.error('Error marking as read:', error);
+      console.error('Error marking notification as read:', error);
     }
   };
 
   const markAllAsRead = async () => {
     try {
-      await axios.put('http://localhost:5000/api/notifications/read-all', {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.put(
+        'http://localhost:5000/api/notifications/read-all',
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       fetchUnreadCount();
       fetchNotifications();
     } catch (error) {
@@ -67,27 +88,82 @@ const NotificationBell = ({ token }) => {
     }
   };
 
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'success':
+        return '✓';
+      case 'warning':
+        return '⚠';
+      case 'error':
+        return '✕';
+      default:
+        return 'ℹ';
+    }
+  };
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
   return (
-    <div className="notification-bell-container">
-      <button className="notification-bell" onClick={handleBellClick}>
-        <Bell size={24} />
-        {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+    <div className="notification-bell-wrapper" ref={dropdownRef}>
+      <button className="bell-button" onClick={toggleDropdown}>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
       </button>
 
-      {showDropdown && (
+      {isOpen && (
         <div className="notification-dropdown">
-          <div className="notification-header">
+          <div className="dropdown-header">
             <h3>Notifications</h3>
             {unreadCount > 0 && (
-              <button onClick={markAllAsRead} className="mark-all-read">
-                Mark all as read
+              <button className="mark-all-btn" onClick={markAllAsRead}>
+                Mark all read
               </button>
             )}
           </div>
 
           <div className="notification-list">
-            {notifications.length === 0 ? (
-              <div className="no-notifications">No notifications</div>
+            {loading ? (
+              <div className="loading-state">Loading...</div>
+            ) : notifications.length === 0 ? (
+              <div className="empty-state">
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <p>No notifications yet</p>
+              </div>
             ) : (
               notifications.map((notif) => (
                 <div
@@ -95,11 +171,14 @@ const NotificationBell = ({ token }) => {
                   className={`notification-item ${notif.is_read ? 'read' : 'unread'}`}
                   onClick={() => !notif.is_read && markAsRead(notif.id)}
                 >
-                  <div className={`notif-type ${notif.type}`}></div>
-                  <div className="notif-content">
-                    <p>{notif.message}</p>
-                    <small>{new Date(notif.created_at).toLocaleString()}</small>
+                  <div className={`notif-icon ${notif.type}`}>
+                    {getNotificationIcon(notif.type)}
                   </div>
+                  <div className="notif-content">
+                    <p className="notif-message">{notif.message}</p>
+                    <span className="notif-time">{formatTime(notif.created_at)}</span>
+                  </div>
+                  {!notif.is_read && <div className="unread-dot"></div>}
                 </div>
               ))
             )}

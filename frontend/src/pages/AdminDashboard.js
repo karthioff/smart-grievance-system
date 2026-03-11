@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FileText, Users, LogOut, Shield, TrendingUp, AlertCircle, CheckCircle, Clock, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from '../components/NotificationBell';
 import axios from 'axios';
 import './AdminDashboard.css';
 
@@ -108,6 +109,7 @@ const AdminDashboard = () => {
           <h2>Admin Dashboard</h2>
         </div>
         <div className="nav-user">
+          <NotificationBell token={token} />
           <Shield size={20} />
           <span>{user?.name}</span>
           <button onClick={handleLogout} className="logout-btn">
