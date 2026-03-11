@@ -11,13 +11,17 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalUsers: 0,
+    totalOfficers: 0,
     totalComplaints: 0,
     pending: 0,
     inProgress: 0,
     resolved: 0,
+    escalated: 0,
     highPriority: 0,
     mediumPriority: 0,
     lowPriority: 0,
+    overdue: 0,
+    avgResolutionHours: 0
   });
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -134,6 +138,16 @@ const AdminDashboard = () => {
             </div>
           </motion.div>
 
+          <motion.div className="stat-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+            <div className="stat-icon users">
+              <Shield size={32} />
+            </div>
+            <div className="stat-info">
+              <h3>{stats.totalOfficers}</h3>
+              <p>Officers</p>
+            </div>
+          </motion.div>
+
           <motion.div className="stat-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <div className="stat-icon total">
               <FileText size={32} />
@@ -174,6 +188,16 @@ const AdminDashboard = () => {
             </div>
           </motion.div>
 
+          <motion.div className="stat-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}>
+            <div className="stat-icon escalated">
+              <AlertCircle size={32} />
+            </div>
+            <div className="stat-info">
+              <h3>{stats.escalated}</h3>
+              <p>Escalated</p>
+            </div>
+          </motion.div>
+
           <motion.div className="stat-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
             <div className="stat-icon high">
               <AlertCircle size={32} />
@@ -181,6 +205,26 @@ const AdminDashboard = () => {
             <div className="stat-info">
               <h3>{stats.highPriority}</h3>
               <p>High Priority</p>
+            </div>
+          </motion.div>
+
+          <motion.div className="stat-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.65 }}>
+            <div className="stat-icon overdue">
+              <Clock size={32} />
+            </div>
+            <div className="stat-info">
+              <h3>{stats.overdue}</h3>
+              <p>Overdue (SLA)</p>
+            </div>
+          </motion.div>
+
+          <motion.div className="stat-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
+            <div className="stat-icon avg">
+              <TrendingUp size={32} />
+            </div>
+            <div className="stat-info">
+              <h3>{stats.avgResolutionHours}h</h3>
+              <p>Avg Resolution</p>
             </div>
           </motion.div>
         </div>
@@ -208,6 +252,7 @@ const AdminDashboard = () => {
                     <th>Category</th>
                     <th>Priority</th>
                     <th>Status</th>
+                    <th>SLA Deadline</th>
                     <th>Date</th>
                     <th>Action</th>
                     <th>History</th>
@@ -234,6 +279,13 @@ const AdminDashboard = () => {
                         <span className={`badge ${getStatusClass(complaint.status)}`}>
                           {complaint.status}
                         </span>
+                      </td>
+                      <td>
+                        {complaint.sla_deadline ? (
+                          <span className={new Date(complaint.sla_deadline) < new Date() && complaint.status !== 'Resolved' && complaint.status !== 'Closed' ? 'sla-overdue' : 'sla-normal'}>
+                            {new Date(complaint.sla_deadline).toLocaleString()}
+                          </span>
+                        ) : 'N/A'}
                       </td>
                       <td>{new Date(complaint.created_at).toLocaleDateString()}</td>
                       <td>

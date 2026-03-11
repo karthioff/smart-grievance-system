@@ -4,10 +4,11 @@ import { motion } from 'framer-motion';
 import { FileText, Plus, List, LogOut, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { complaintAPI } from '../services/api';
+import NotificationBell from '../components/NotificationBell';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     total: 0,
@@ -61,6 +62,7 @@ const Dashboard = () => {
           <h2>Grievance System</h2>
         </div>
         <div className="nav-user">
+          <NotificationBell token={token} />
           <User size={20} />
           <span>{user?.name}</span>
           <button onClick={handleLogout} className="logout-btn">
