@@ -159,20 +159,32 @@ async function createTables() {
 // Rule-based priority assignment
 function assignPriority(description, category) {
   const descLower = description.toLowerCase();
-  
-  const highKeywords = ['urgent', 'emergency', 'critical', 'danger', 'life', 'death', 'severe', 'immediate'];
+  const catLower = category.toLowerCase();
+
+  // High priority keywords in description
+  const highKeywords = ['urgent', 'emergency', 'critical', 'danger', 'life', 'death', 'severe', 'immediate', 'accident', 'fire', 'flood', 'leak'];
+
+  // High priority categories - check if category CONTAINS these words
   const highCategories = ['health', 'safety', 'water', 'electricity'];
-  
-  if (highKeywords.some(keyword => descLower.includes(keyword)) || 
-      highCategories.includes(category.toLowerCase())) {
+
+  if (
+    highKeywords.some(keyword => descLower.includes(keyword)) ||
+    highCategories.some(cat => catLower.includes(cat))
+  ) {
     return 'High';
   }
-  
-  const mediumKeywords = ['problem', 'issue', 'broken', 'damaged', 'not working'];
-  if (mediumKeywords.some(keyword => descLower.includes(keyword))) {
+
+  // Medium priority keywords
+  const mediumKeywords = ['problem', 'issue', 'broken', 'damaged', 'not working', 'repair', 'fix', 'complaint', 'bad', 'poor'];
+  const mediumCategories = ['roads', 'sanitation', 'transportation'];
+
+  if (
+    mediumKeywords.some(keyword => descLower.includes(keyword)) ||
+    mediumCategories.some(cat => catLower.includes(cat))
+  ) {
     return 'Medium';
   }
-  
+
   return 'Low';
 }
 
