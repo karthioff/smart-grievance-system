@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Eye, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Eye, AlertCircle, Trash2 } from 'lucide-react';
 import { complaintAPI } from '../services/api';
 import './ComplaintList.css';
 
@@ -22,6 +22,17 @@ const ComplaintList = () => {
       console.error('Error fetching complaints:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to remove this complaint from your list?")) {
+      try {
+        await complaintAPI.deleteComplaint(id);
+        fetchComplaints(); // Refresh the list
+      } catch (error) {
+        console.error('Error deleting complaint:', error);
+      }
     }
   };
 
@@ -117,13 +128,40 @@ const ComplaintList = () => {
                   <p className="date">Submitted: {new Date(complaint.created_at).toLocaleDateString()}</p>
                 </div>
 
-                <button
-                  onClick={() => navigate(`/complaints/${complaint.id}`)}
-                  className="view-btn"
-                >
-                  <Eye size={18} />
-                  View Details
-                </button>
+                <div className="card-actions" style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => navigate(`/complaints/${complaint.id}`)}
+                    className="view-btn"
+                    style={{ flex: 1 }}
+                  >
+                    <Eye size={18} />
+                    View Details
+                  </button>
+                  {(complaint.status === 'Resolved' || complaint.status === 'Closed') && (
+                    <button
+                      onClick={() => handleDelete(complaint.id)}
+                      className="delete-btn"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        background: '#fee2e2',
+                        color: '#dc2626',
+                        border: 'none',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        flex: 1
+                      }}
+                    >
+                      <Trash2 size={18} />
+                      Delete
+                    </button>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>

@@ -31,6 +31,7 @@ export const complaintAPI = {
   submitComplaint: (complaintData) => api.post('/complaints', complaintData),
   getComplaints: () => api.get('/complaints'),
   getComplaint: (id) => api.get(`/complaints/${id}`),
+  deleteComplaint: (id) => api.delete(`/complaints/${id}`),
 };
 
 export default api;

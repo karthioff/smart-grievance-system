@@ -28,8 +28,8 @@ const emailTransporter = nodemailer.createTransport({
 // Twilio client configuration
 let twilioClient = null;
 try {
-  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && 
-      process.env.TWILIO_ACCOUNT_SID !== 'your-twilio-account-sid') {
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN &&
+    process.env.TWILIO_ACCOUNT_SID !== 'your-twilio-account-sid') {
     twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
     console.log('✓ Twilio SMS configured');
   }
@@ -76,7 +76,7 @@ async function initializeDatabase() {
 
 async function createTables() {
   const connection = await pool.getConnection();
-  
+
   try {
     // Users table
     await connection.query(`
@@ -176,14 +176,14 @@ function assignPriority(description, category) {
 
   // Medium priority categories first (more specific)
   const mediumCategories = ['roads', 'sanitation', 'transportation'];
-  
+
   if (mediumCategories.some(cat => catLower.includes(cat))) {
     return 'Medium';
   }
 
   // Medium priority keywords (only if not already categorized)
   const mediumKeywords = ['broken', 'damaged', 'not working', 'repair', 'fix', 'bad', 'poor', 'faulty'];
-  
+
   if (mediumKeywords.some(keyword => descLower.includes(keyword))) {
     return 'Medium';
   }
@@ -195,13 +195,13 @@ function assignPriority(description, category) {
 function calculateSLADeadline(priority) {
   const now = new Date();
   let hours = 72; // Default 3 days for Low priority
-  
+
   if (priority === 'High') {
     hours = 24; // 1 day for High priority
   } else if (priority === 'Medium') {
     hours = 48; // 2 days for Medium priority
   }
-  
+
   return new Date(now.getTime() + hours * 60 * 60 * 1000);
 }
 
@@ -212,16 +212,16 @@ async function autoAssignOfficer(category) {
       'SELECT id FROM users WHERE role = "officer" AND department = ? ORDER BY RAND() LIMIT 1',
       [category]
     );
-    
+
     if (officers.length > 0) {
       return officers[0].id;
     }
-    
+
     // If no officer for specific department, assign to any officer
     const [anyOfficer] = await pool.query(
       'SELECT id FROM users WHERE role = "officer" ORDER BY RAND() LIMIT 1'
     );
-    
+
     return anyOfficer.length > 0 ? anyOfficer[0].id : null;
   } catch (error) {
     console.error('Auto-assign error:', error);
@@ -375,7 +375,7 @@ async function sendSMSNotification(message) {
     console.log('⚠ SMS not configured - Install Fast2SMS (free) or Twilio');
     console.log('📱 SMS would have been sent to:', process.env.ADMIN_PHONE);
     console.log('📝 Message:', message.substring(0, 100) + '...');
-    
+
   } catch (error) {
     console.error('SMS notification error:', error.message);
     console.log('📱 Failed to send SMS to:', process.env.ADMIN_PHONE);
@@ -387,7 +387,7 @@ async function notifyAdminAboutComplaint(complaintDetails) {
   try {
     // Get admin user
     const [admins] = await pool.query('SELECT id FROM users WHERE role = "admin" LIMIT 1');
-    
+
     if (admins.length > 0) {
       // Create in-app notification for admin
       await createNotification(
@@ -425,20 +425,20 @@ async function checkAndEscalateComplaints() {
       AND c.sla_deadline < NOW()
       AND c.escalation_level < 2
     `);
-    
+
     for (const complaint of overdueComplaints) {
       const newLevel = complaint.escalation_level + 1;
-      
+
       await pool.query(
         'UPDATE complaints SET status = "Escalated", escalation_level = ?, updated_at = NOW() WHERE id = ?',
         [newLevel, complaint.id]
       );
-      
+
       await pool.query(
         'INSERT INTO escalation_log (complaint_id, escalated_from, escalated_to, reason, escalated_at) VALUES (?, ?, ?, ?, NOW())',
-        [complaint.id, complaint.assigned_to, null, 'SLA deadline exceeded', ]
+        [complaint.id, complaint.assigned_to, null, 'SLA deadline exceeded',]
       );
-      
+
       await createNotification(
         complaint.user_id,
         complaint.id,
@@ -624,7 +624,7 @@ app.post('/api/complaints', authenticateToken, async (req, res) => {
 app.get('/api/complaints', authenticateToken, async (req, res) => {
   try {
     const [complaints] = await pool.query(
-      'SELECT * FROM complaints WHERE user_id = ? ORDER BY created_at DESC',
+      'SELECT * FROM complaints WHERE user_id = ? AND is_deleted = FALSE ORDER BY created_at DESC',
       [req.userId]
     );
 
@@ -632,6 +632,35 @@ app.get('/api/complaints', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get complaints error:', error);
     res.status(500).json({ error: 'Failed to fetch complaints' });
+  }
+});
+
+// Soft delete complaint
+app.delete('/api/complaints/:id', authenticateToken, async (req, res) => {
+  try {
+    const [complaints] = await pool.query(
+      'SELECT * FROM complaints WHERE id = ? AND user_id = ?',
+      [req.params.id, req.userId]
+    );
+
+    if (complaints.length === 0) {
+      return res.status(404).json({ error: 'Complaint not found' });
+    }
+
+    const complaint = complaints[0];
+    if (complaint.status !== 'Resolved' && complaint.status !== 'Closed') {
+      return res.status(400).json({ error: 'Only resolved or closed complaints can be deleted' });
+    }
+
+    await pool.query(
+      'UPDATE complaints SET is_deleted = TRUE WHERE id = ?',
+      [req.params.id]
+    );
+
+    res.json({ message: 'Complaint deleted successfully' });
+  } catch (error) {
+    console.error('Delete complaint error:', error);
+    res.status(500).json({ error: 'Failed to delete complaint' });
   }
 });
 
@@ -733,7 +762,7 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
     const [mediumPriority] = await pool.query('SELECT COUNT(*) as count FROM complaints WHERE priority = "Medium"');
     const [lowPriority] = await pool.query('SELECT COUNT(*) as count FROM complaints WHERE priority = "Low"');
     const [overdueComplaints] = await pool.query('SELECT COUNT(*) as count FROM complaints WHERE sla_deadline < NOW() AND status NOT IN ("Resolved", "Closed")');
-    
+
     // Average resolution time
     const [avgResolution] = await pool.query(`
       SELECT AVG(TIMESTAMPDIFF(HOUR, created_at, resolved_at)) as avg_hours 

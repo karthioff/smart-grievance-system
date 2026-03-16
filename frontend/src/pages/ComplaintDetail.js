@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, FileText, Tag, MapPin, Calendar, AlertCircle } from 'lucide-react';
+import { ArrowLeft, FileText, Tag, MapPin, Calendar, AlertCircle, Trash2 } from 'lucide-react';
 import { complaintAPI } from '../services/api';
 import './ComplaintDetail.css';
 
@@ -23,6 +23,17 @@ const ComplaintDetail = () => {
       console.error('Error fetching complaint:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to remove this complaint from your view?")) {
+      try {
+        await complaintAPI.deleteComplaint(id);
+        navigate('/complaints');
+      } catch (error) {
+        console.error('Error deleting complaint:', error);
+      }
     }
   };
 
@@ -79,11 +90,33 @@ const ComplaintDetail = () => {
 
   return (
     <div className="complaint-detail-container">
-      <div className="complaint-detail-header">
+      <div className="complaint-detail-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={() => navigate('/complaints')} className="back-btn">
           <ArrowLeft size={20} />
           Back to Complaints
         </button>
+        {(complaint.status === 'Resolved' || complaint.status === 'Closed') && (
+          <button
+            onClick={() => handleDelete(complaint.id)}
+            className="delete-btn"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: '#fee2e2',
+              color: '#dc2626',
+              border: 'none',
+              padding: '10px 16px',
+              borderRadius: '4px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            <Trash2 size={18} />
+            Delete Complaint
+          </button>
+        )}
       </div>
 
       <motion.div
