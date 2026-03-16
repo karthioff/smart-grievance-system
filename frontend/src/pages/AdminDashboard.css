@@ -380,3 +380,50 @@
 .sla-normal {
   color: #059669;
 }
+/* Priority and Status Badges */
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+/* Priority Badge Colors */
+.priority-high {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.priority-medium {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.priority-low {
+  background: #d1fae5;
+  color: #059669;
+}
+
+/* Status Badge Colors */
+.status-pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-progress {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.status-resolved {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-escalated {
+  background: #fee2e2;
+  color: #dc2626;
+}

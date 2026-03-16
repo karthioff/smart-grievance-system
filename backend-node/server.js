@@ -174,14 +174,17 @@ function assignPriority(description, category) {
     return 'High';
   }
 
-  // Medium priority keywords
-  const mediumKeywords = ['problem', 'issue', 'broken', 'damaged', 'not working', 'repair', 'fix', 'complaint', 'bad', 'poor'];
+  // Medium priority categories first (more specific)
   const mediumCategories = ['roads', 'sanitation', 'transportation'];
+  
+  if (mediumCategories.some(cat => catLower.includes(cat))) {
+    return 'Medium';
+  }
 
-  if (
-    mediumKeywords.some(keyword => descLower.includes(keyword)) ||
-    mediumCategories.some(cat => catLower.includes(cat))
-  ) {
+  // Medium priority keywords (only if not already categorized)
+  const mediumKeywords = ['broken', 'damaged', 'not working', 'repair', 'fix', 'bad', 'poor', 'faulty'];
+  
+  if (mediumKeywords.some(keyword => descLower.includes(keyword))) {
     return 'Medium';
   }
 
