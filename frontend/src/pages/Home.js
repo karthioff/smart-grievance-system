@@ -24,7 +24,7 @@ const Home = () => {
             <nav className="home-navbar">
                 <div className="logo">
                     <Shield className="logo-icon" size={32} />
-                    <span>Smart Grievance</span>
+                    <span>VoiceIt</span>
                 </div>
                 <div className="nav-links">
                     {user ? (

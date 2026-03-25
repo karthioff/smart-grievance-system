@@ -25,7 +25,7 @@ const Dashboard = () => {
     try {
       const response = await complaintAPI.getComplaints();
       const complaints = response.data.complaints;
-      
+
       setStats({
         total: complaints.length,
         pending: complaints.filter(c => c.status === 'Pending').length,
@@ -59,7 +59,7 @@ const Dashboard = () => {
       <nav className="dashboard-nav">
         <div className="nav-brand">
           <FileText size={28} />
-          <h2>Grievance System</h2>
+          <h2>VoiceIt</h2>
         </div>
         <div className="nav-user">
           <NotificationBell token={token} />
