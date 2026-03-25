@@ -112,6 +112,7 @@ async function createTables() {
         updated_at DATETIME,
         resolved_at DATETIME,
         escalation_level INT DEFAULT 0,
+        is_deleted BOOLEAN DEFAULT FALSE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         INDEX idx_user_id (user_id),
         INDEX idx_status (status),
@@ -120,6 +121,13 @@ async function createTables() {
         INDEX idx_sla_deadline (sla_deadline)
       )
     `);
+
+    // Add is_deleted column for existing databases
+    try {
+      await connection.query('ALTER TABLE complaints ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE');
+    } catch (e) {
+      // Ignore error if column already exists
+    }
 
     // Escalation log table
     await connection.query(`

@@ -10,6 +10,7 @@ import ComplaintList from './pages/ComplaintList';
 import ComplaintDetail from './pages/ComplaintDetail';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import Home from './pages/Home';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -27,7 +28,7 @@ function App() {
             <Route path="/complaints/:id" element={<PrivateRoute><ComplaintDetail /></PrivateRoute>} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/" element={<Home />} />
           </Routes>
           <ToastContainer position="top-right" autoClose={3000} />
         </div>
