@@ -61,3 +61,10 @@ env/
 # Temporary files
 *.tmp
 *.temp
+
+# Distribution package (too large for GitHub)
+DISTRIBUTION_PACKAGE/
+*.exe
+
+# User-specific files
+frontend/pass.txt

@@ -6,9 +6,6 @@ echo ========================================
 echo   STARTING FRONTEND SERVER
 echo ========================================
 echo.
-cd frontend
-echo Starting frontend on http://localhost:3000
-echo Browser will open automatically...
-echo.
+pushd "C:\Users\Administrator\Desktop\sgs 2\frontend"
 npm start
 pause

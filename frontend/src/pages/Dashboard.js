@@ -57,9 +57,11 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <nav className="dashboard-nav">
-        <div className="nav-brand">
-          <FileText size={28} />
-          <h2>VoiceIt</h2>
+        <div className="nav-brand" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FileText size={28} />
+            <h2 style={{ margin: 0 }}>VoiceIt</h2>
+          </div>
         </div>
         <div className="nav-user">
           <NotificationBell token={token} />

@@ -22,9 +22,11 @@ const Home = () => {
     return (
         <div className="home-container">
             <nav className="home-navbar">
-                <div className="logo">
-                    <Shield className="logo-icon" size={32} />
-                    <span>VoiceIt</span>
+                <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Shield className="logo-icon" size={32} />
+                        <span>VoiceIt</span>
+                    </div>
                 </div>
                 <div className="nav-links">
                     {user ? (

@@ -904,13 +904,29 @@ app.get('/api/notifications/unread-count', authenticateToken, async (req, res) =
   }
 });
 
+// Serve Frontend Static Files
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Catch-all route to serve React app for unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Initialize database and start server
 initializeDatabase().then(() => {
   app.listen(PORT, () => {
     console.log(`\n${'='.repeat(60)}`);
-    console.log('✓ Grievance System Backend Server Running');
+    console.log('✓ Grievance System Backend and Frontend Server Running');
     console.log(`✓ Server: http://localhost:${PORT}`);
     console.log(`✓ Health Check: http://localhost:${PORT}/api/health`);
     console.log('='.repeat(60) + '\n');
+
+    // Automatically open the application in the user's default browser
+    try {
+      require('child_process').exec(`start http://localhost:${PORT}`);
+    } catch (e) {
+      console.log('Could not automatically open the browser.');
+    }
   });
 });

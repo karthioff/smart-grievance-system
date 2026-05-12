@@ -6,8 +6,6 @@ echo ========================================
 echo   STARTING BACKEND SERVER
 echo ========================================
 echo.
-cd backend-node
-echo Starting backend on http://localhost:5000
-echo.
-npm start
+pushd "C:\Users\Administrator\Desktop\sgs 2\backend-node"
+node server.js
 pause
